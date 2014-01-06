@@ -289,9 +289,6 @@ exports.compile = function (source, options) {
 })(swig);
 (function (exports) {
 
-// Javascript keywords can't be a name: 'for.is_invalid' as well as 'for' but not 'for_' or '_for'
-var KEYWORDS = /^(Array|ArrayBuffer|Boolean|Date|Error|eval|EvalError|Function|Infinity|Iterator|JSON|Math|Namespace|NaN|Number|Object|QName|RangeError|ReferenceError|RegExp|StopIteration|String|SyntaxError|TypeError|undefined|uneval|URIError|XML|XMLList|break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)(?=(\.|$))/;
-
 // Returns TRUE if the passed string is a valid javascript string literal
 exports.isStringLiteral = function (string) {
   if (typeof string !== 'string') {
@@ -333,13 +330,12 @@ exports.isLiteral = function (string) {
 exports.isValidName = function (string) {
   return ((typeof string === 'string')
     && string.substr(0, 2) !== '__'
-    && (/^([$A-Za-z_]+[$A-Za-z_0-9]*)(\.?([$A-Za-z_]+[$A-Za-z_0-9]*))*$/).test(string)
-    && !KEYWORDS.test(string));
+    && string != '');
 };
 
 // Variable names starting with __ are reserved.
 exports.isValidShortName = function (string) {
-  return string.substr(0, 2) !== '__' && (/^[$A-Za-z_]+[$A-Za-z_0-9]*$/).test(string) && !KEYWORDS.test(string);
+  return string.substr(0, 2) !== '__' && string != '';
 };
 
 // Checks if a name is a vlaid block name
@@ -357,28 +353,28 @@ exports.stripWhitespace = stripWhitespace;
 // this function searches for these and preserves the literal parts
 function filterVariablePath(props) {
 
-	var filtered = [],
-		literal = '',
-		i = 0;
-	for (i; i < props.length; i += 1) {
-		if (props[i] && props[i].charAt(0) !== props[i].charAt(props[i].length - 1) &&
-				(props[i].indexOf('"') === 0 || props[i].indexOf("'") === 0)) {
-			literal = props[i];
-			continue;
-		}
-		if (props[i] === '.' && literal) {
-			literal += '.';
-			continue;
-		}
-		if (props[i].indexOf('"') === props[i].length - 1 || props[i].indexOf("'") === props[i].length - 1) {
-			literal += props[i];
-			filtered.push(literal);
-			literal = '';
-		} else {
-			filtered.push(props[i]);
-		}
-	}
-	return _.compact(filtered);
+  var filtered = [],
+    literal = '',
+    i = 0;
+  for (i; i < props.length; i += 1) {
+    if (props[i] && props[i].charAt(0) !== props[i].charAt(props[i].length - 1) &&
+        (props[i].indexOf('"') === 0 || props[i].indexOf("'") === 0)) {
+      literal = props[i];
+      continue;
+    }
+    if (props[i] === '.' && literal) {
+      literal += '.';
+      continue;
+    }
+    if (props[i].indexOf('"') === props[i].length - 1 || props[i].indexOf("'") === props[i].length - 1) {
+      literal += props[i];
+      filtered.push(literal);
+      literal = '';
+    } else {
+      filtered.push(props[i]);
+    }
+  }
+  return _.compact(filtered);
 }
 
 /**
